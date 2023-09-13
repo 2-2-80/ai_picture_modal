@@ -1,0 +1,1 @@
+modal run stable-diffusion-webui.py

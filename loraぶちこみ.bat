@@ -1,0 +1,1 @@
+modal nfs put stable-diffusion-webui-main lora /models/Lora
