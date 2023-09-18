@@ -21,6 +21,8 @@ model_ids = [
     {
         "repo_id": "syaimu/7th_Layer",
         "model_path": "7th_anime_v3/7th_anime_v3_C.ckpt",
+        "model_name": "7th_anime_v3_C.ckpt",
+        "config_file_path": "",
     },
 ]
 
@@ -101,7 +103,7 @@ async def run_stable_diffusion_webui():
     for model_id in model_ids:
         print(Fore.GREEN + model_id["repo_id"] + "のセットアップを開始します...")
 
-        if not Path(webui_model_dir + model_id["model_path"]).exists():
+        if not Path(webui_model_dir + model_id["model_name"]).exists():
             # モデルのダウンロード＆コピー
             model_downloaded_dir = download_hf_file(
                 model_id["repo_id"],
