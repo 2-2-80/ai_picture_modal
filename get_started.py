@@ -1,6 +1,6 @@
 import modal
 
-stub = modal.Stub("example-get-started")
+app = modal.App("example-get-started")
 
 
 @stub.function()
