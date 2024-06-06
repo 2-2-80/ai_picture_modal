@@ -9,8 +9,8 @@ import shlex
 import os
 
 # modal系の変数の定義
-stub = modal.Stub("stable-diffusion-webui")
-volume_main = modal.NetworkFileSystem.new().persist("stable-diffusion-webui-main")
+app = modal.App("stable-diffusion-webui-2")
+volume_main = modal.NetworkFileSystem.from_name("stable-diffusion-webui-main-2", create_if_missing=True)
 
 # 色んなパスの定義
 webui_dir = "/content/stable-diffusion-webui"
@@ -19,15 +19,14 @@ webui_model_dir = webui_dir + "/models/Stable-diffusion/"
 # モデルのID
 model_ids = [
     {
-        "repo_id": "syaimu/7th_Layer",
-        "model_path": "7th_anime_v3/7th_anime_v3_C.ckpt",
-        "model_name": "7th_anime_v3_C.ckpt",
-        "config_file_path": "",
+        "repo_id": "runwayml/stable-diffusion-v1-5",
+        "model_path": "v1-5-pruned.ckpt",
+        "config_file_path": "v1-inference.yaml",
     },
 ]
 
 
-@stub.function(
+@app.function(
     image=modal.Image.from_registry("python:3.8-slim")
     .apt_install(
         "git", "libgl1-mesa-dev", "libglib2.0-0", "libsm6", "libxrender1", "libxext6"
@@ -80,7 +79,7 @@ model_ids = [
         "torchmetrics==0.11.4",
     )
     .pip_install("git+https://github.com/mlfoundations/open_clip.git@bb6e834e9c70d9c27d0dc3ecedeebeaeb1ffad6b"),
-    secret=modal.Secret.from_name("my-huggingface-secret"),
+    secrets=[modal.Secret.from_name("my-huggingface-secret")],
     network_file_systems={webui_dir: volume_main},
     gpu="a10g",
     timeout=6000,
@@ -103,7 +102,7 @@ async def run_stable_diffusion_webui():
     for model_id in model_ids:
         print(Fore.GREEN + model_id["repo_id"] + "のセットアップを開始します...")
 
-        if not Path(webui_model_dir + model_id["model_name"]).exists():
+        if not Path(webui_model_dir + model_id["model_path"]).exists():
             # モデルのダウンロード＆コピー
             model_downloaded_dir = download_hf_file(
                 model_id["repo_id"],
@@ -139,6 +138,6 @@ async def run_stable_diffusion_webui():
     start()
 
 
-@stub.local_entrypoint()
+@app.local_entrypoint()
 def main():
     run_stable_diffusion_webui.remote()
